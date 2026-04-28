@@ -11,7 +11,7 @@ interface Expense {
   id: number;
   requestId: string;
   userEmail: string;
-  amountCents: number;
+  amount_cents: number;
   category: string;
   description: string;
   date: string;
@@ -92,7 +92,7 @@ function formatDate(iso: string): string {
 function PieChart({ expenses }: { expenses: Expense[] }) {
   const categoryTotals: Record<string, number> = {};
   expenses.forEach((e) => {
-    categoryTotals[e.category] = (categoryTotals[e.category] || 0) + e.amountCents;
+    categoryTotals[e.category] = (categoryTotals[e.category] || 0) + e.amount_cents;
   });
 
   const entries = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]);
@@ -354,7 +354,7 @@ function Dashboard({
     ? expenses.filter((e) => e.category === filterCategory)
     : expenses;
 
-  const total = filtered.reduce((sum, e) => sum + e.amountCents, 0);
+  const total = filtered.reduce((sum, e) => sum + e.amount_cents, 0);
 
   /* ---- render ---- */
   return (
@@ -451,11 +451,10 @@ function Dashboard({
                         key={s}
                         type="button"
                         onClick={() => setDescription(s)}
-                        className={`rounded-full border px-2.5 py-0.5 text-[11px] transition-all ${
-                          description === s
+                        className={`rounded-full border px-2.5 py-0.5 text-[11px] transition-all ${description === s
                             ? "border-accent bg-accent/15 text-accent"
                             : "border-border text-muted hover:border-accent/40 hover:text-accent/80"
-                        }`}
+                          }`}
                       >
                         {s}
                       </button>
@@ -593,7 +592,7 @@ function Dashboard({
                             {exp.description || "—"}
                           </td>
                           <td className="whitespace-nowrap px-4 py-3 text-right font-mono font-semibold text-foreground">
-                            {formatCurrency(exp.amountCents)}
+                            {formatCurrency(exp.amount_cents)}
                           </td>
                         </tr>
                       ))
@@ -654,20 +653,18 @@ function SummaryCard({
 }) {
   return (
     <div
-      className={`rounded-2xl border p-4 transition-all ${
-        highlight
+      className={`rounded-2xl border p-4 transition-all ${highlight
           ? "border-accent/30 bg-accent-bg"
           : "border-border bg-card hover:border-border-hover"
-      }`}
+        }`}
     >
       <div className="flex items-center gap-3">
         <span className="text-2xl">{icon}</span>
         <div>
           <p className="text-xs text-muted">{label}</p>
           <p
-            className={`text-lg font-bold tracking-tight ${
-              highlight ? "text-accent" : "text-foreground"
-            }`}
+            className={`text-lg font-bold tracking-tight ${highlight ? "text-accent" : "text-foreground"
+              }`}
           >
             {value}
           </p>
