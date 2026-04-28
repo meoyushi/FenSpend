@@ -287,6 +287,7 @@ function Dashboard({
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
   const [filterCategory, setFilterCategory] = useState("");
+  const [sortOrder, setSortOrder] = useState("newest");
   const [successMsg, setSuccessMsg] = useState("");
 
   const [amount, setAmount] = useState("");
@@ -354,7 +355,16 @@ function Dashboard({
     ? expenses.filter((e) => e.category === filterCategory)
     : expenses;
 
-  const total = filtered.reduce((sum, e) => sum + e.amount_cents, 0);
+  const visibleExpenses = [...filtered].sort((a, b) =>
+    sortOrder === "newest"
+      ? new Date(b.date).getTime() - new Date(a.date).getTime()
+      : new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
+  const total = visibleExpenses.reduce(
+    (sum, e) => sum + e.amount_cents,
+    0
+  );
 
   /* ---- render ---- */
   return (
@@ -452,8 +462,8 @@ function Dashboard({
                         type="button"
                         onClick={() => setDescription(s)}
                         className={`rounded-full border px-2.5 py-0.5 text-[11px] transition-all ${description === s
-                            ? "border-accent bg-accent/15 text-accent"
-                            : "border-border text-muted hover:border-accent/40 hover:text-accent/80"
+                          ? "border-accent bg-accent/15 text-accent"
+                          : "border-border text-muted hover:border-accent/40 hover:text-accent/80"
                           }`}
                       >
                         {s}
@@ -524,19 +534,30 @@ function Dashboard({
                   Expenses
                 </h2>
 
-                <select
-                  id="filter-category"
-                  value={filterCategory}
-                  onChange={(e) => setFilterCategory(e.target.value)}
-                  className="appearance-none rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20"
-                >
-                  <option value="">All Categories</option>
-                  {CATEGORIES.map((c) => (
-                    <option key={c} value={c}>
-                      {CATEGORY_ICONS[c]} {c}
-                    </option>
-                  ))}
-                </select>
+                <div className="flex gap-2">
+                  <select
+                    id="filter-category"
+                    value={filterCategory}
+                    onChange={(e) => setFilterCategory(e.target.value)}
+                    className="appearance-none rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20"
+                  >
+                    <option value="">All Categories</option>
+                    {CATEGORIES.map((c) => (
+                      <option key={c} value={c}>
+                        {CATEGORY_ICONS[c]} {c}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={sortOrder}
+                    onChange={(e) => setSortOrder(e.target.value)}
+                    className="appearance-none rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20"
+                  >
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                  </select>
+                </div>
               </div>
 
               {/* Table */}
@@ -558,7 +579,7 @@ function Dashboard({
                         <SkeletonRow />
                         <SkeletonRow />
                       </>
-                    ) : filtered.length === 0 ? (
+                    ) : visibleExpenses.length === 0 ? (
                       <tr>
                         <td
                           colSpan={4}
@@ -574,7 +595,7 @@ function Dashboard({
                         </td>
                       </tr>
                     ) : (
-                      filtered.map((exp) => (
+                      visibleExpenses.map((exp) => (
                         <tr
                           key={exp.id}
                           className="animate-fade-in transition-colors hover:bg-card-hover"
@@ -600,14 +621,14 @@ function Dashboard({
                   </tbody>
 
                   {/* Footer total */}
-                  {!loading && filtered.length > 0 && (
+                  {!loading && visibleExpenses.length > 0 && (
                     <tfoot>
                       <tr className="border-t border-border bg-accent-bg">
                         <td
                           colSpan={3}
                           className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-accent"
                         >
-                          Total ({filtered.length} expense{filtered.length !== 1 ? "s" : ""})
+                          Total ({visibleExpenses.length} expense{visibleExpenses.length !== 1 ? "s" : ""})
                         </td>
                         <td className="px-4 py-3 text-right font-mono font-bold text-accent">
                           {formatCurrency(total)}
@@ -654,8 +675,8 @@ function SummaryCard({
   return (
     <div
       className={`rounded-2xl border p-4 transition-all ${highlight
-          ? "border-accent/30 bg-accent-bg"
-          : "border-border bg-card hover:border-border-hover"
+        ? "border-accent/30 bg-accent-bg"
+        : "border-border bg-card hover:border-border-hover"
         }`}
     >
       <div className="flex items-center gap-3">
