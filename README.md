@@ -4,7 +4,7 @@
 
 # FenSpend 💸
 
-A minimal, production-quality personal expense tracker built as a full-stack assignment. Track your spending by category, filter and sort your expenses, and always know your running total — even across page refreshes and unreliable networks.
+A minimal, production-quality personal expense tracker built as a full-stack assignment for Fenmo. Track your spending by category, filter and sort your expenses, and always know your running total — even across page refreshes and unreliable networks.
 
 **Live App:** [fen-spend.vercel.app](https://fen-spend.vercel.app)  
 **Repo:** [github.com/meoyushi/FenSpend](https://github.com/meoyushi/FenSpend)
