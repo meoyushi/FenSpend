@@ -1,76 +1,88 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_ANON_KEY!
+);
 
 export async function GET(req: NextRequest) {
-    const { searchParams } = new URL(req.url);
+  const { searchParams } = new URL(req.url);
 
-    const category = searchParams.get("category");
-    const email = searchParams.get("email");
+  const email = searchParams.get("email");
+  const category = searchParams.get("category");
 
-    const expenses = await prisma.expense.findMany({
-        where: {
-            ...(email ? { userEmail: email } : {}),
-            ...(category ? { category } : {}),
-        },
-        orderBy: { date: "desc" },
-    });
+  let query = supabase
+    .from("expenses")
+    .select("*")
+    .order("date", { ascending: false });
 
-    return NextResponse.json(expenses);
+  if (email) query = query.eq("user_email", email);
+  if (category) query = query.eq("category", category);
+
+  const { data, error } = await query;
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json(data);
 }
 
 export async function POST(req: NextRequest) {
-    try {
-        const body = await req.json();
+  try {
+    const body = await req.json();
 
-        const {
-            requestId,
-            amount,
-            category,
-            description,
-            date,
-            email
-        } = body;
+    const {
+      requestId,
+      amount,
+      category,
+      description,
+      date,
+      email,
+    } = body;
 
-        if (!requestId || !amount || !category || !date || !email) {
-            return NextResponse.json(
-                { error: "Missing required fields" },
-                { status: 400 }
-            );
-        }
+    const selectedDate = new Date(date);
 
-        const existing = await prisma.expense.findUnique({
-            where: { requestId },
-        });
-
-        if (existing) {
-            return NextResponse.json(existing);
-        }
-
-        const selectedDate = new Date(date);
-
-        if (selectedDate > new Date()) {
-            return NextResponse.json(
-                { error: "Future dates not allowed" },
-                { status: 400 }
-            );
-        }
-
-        const created = await prisma.expense.create({
-            data: {
-                requestId,
-                userEmail: email,
-                amountCents: Math.round(Number(amount) * 100),
-                category,
-                description: description || "",
-                date: selectedDate,
-            },
-        });
-
-        return NextResponse.json(created);
-    } catch (error) {
-        return NextResponse.json(
-            { error: "Server error" },
-            { status: 500 }
-        );
+    if (selectedDate > new Date()) {
+      return NextResponse.json(
+        { error: "Future dates not allowed" },
+        { status: 400 }
+      );
     }
+
+    const { data: existing } = await supabase
+      .from("expenses")
+      .select("*")
+      .eq("request_id", requestId)
+      .maybeSingle();
+
+    if (existing) return NextResponse.json(existing);
+
+    const { data, error } = await supabase
+      .from("expenses")
+      .insert([
+        {
+          request_id: requestId,
+          user_email: email,
+          amount_cents: Math.round(Number(amount) * 100),
+          category,
+          description: description || "",
+          date,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data);
+  } catch {
+    return NextResponse.json(
+      { error: "Server error" },
+      { status: 500 }
+    );
+  }
 }
