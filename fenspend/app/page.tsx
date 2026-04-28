@@ -366,6 +366,17 @@ function Dashboard({
     0
   );
 
+  const handleDelete = async (id: number) => {
+    const ok = confirm("Delete this expense?");
+    if (!ok) return;
+
+    await fetch(`/api/expenses?id=${id}`, {
+      method: "DELETE",
+    });
+
+    fetchExpenses();
+  };
+
   /* ---- render ---- */
   return (
     <div className="flex flex-1 flex-col animate-fade-in">
@@ -569,6 +580,7 @@ function Dashboard({
                       <th className="px-4 py-3 font-medium">Category</th>
                       <th className="px-4 py-3 font-medium">Description</th>
                       <th className="px-4 py-3 font-medium text-right">Amount</th>
+                      <th className="px-4 py-3 font-medium text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border stagger">
@@ -582,7 +594,7 @@ function Dashboard({
                     ) : visibleExpenses.length === 0 ? (
                       <tr>
                         <td
-                          colSpan={4}
+                          colSpan={5}
                           className="px-4 py-12 text-center text-muted"
                         >
                           <div className="flex flex-col items-center gap-2">
@@ -615,6 +627,14 @@ function Dashboard({
                           <td className="whitespace-nowrap px-4 py-3 text-right font-mono font-semibold text-foreground">
                             {formatCurrency(exp.amount_cents)}
                           </td>
+                          <td className="px-4 py-3 text-right">
+                            <button
+                              onClick={() => handleDelete(exp.id)}
+                              className="rounded-lg px-2 py-1 text-xs text-danger hover:bg-danger/10"
+                            >
+                              Delete
+                            </button>
+                          </td>
                         </tr>
                       ))
                     )}
@@ -625,7 +645,7 @@ function Dashboard({
                     <tfoot>
                       <tr className="border-t border-border bg-accent-bg">
                         <td
-                          colSpan={3}
+                          colSpan={4}
                           className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-accent"
                         >
                           Total ({visibleExpenses.length} expense{visibleExpenses.length !== 1 ? "s" : ""})
