@@ -4,7 +4,7 @@
 
 # FenSpend 💸
 
-A minimal, production-quality personal expense tracker built as a full-stack assignment for Fenmo. Track your spending by category, filter and sort your expenses, and always know your running total — even across page refreshes and unreliable networks.
+A personal AI-supported finance project that started as an expense tracker. Track your spending by category, filter and sort your expenses, and get explainable financial insights alongside your portfolio data.
 
 **Live App:** [fen-spend.vercel.app](https://fen-spend.vercel.app)  
 **Repo:** [github.com/meoyushi/FenSpend](https://github.com/meoyushi/FenSpend)
@@ -109,7 +109,7 @@ Fetch expenses for the authenticated user.
 ## Key Design Decisions
 
 ### 1. Supabase instead of a custom backend
-The assignment allowed any persistence mechanism. Using Supabase's auto-generated REST API and Row Level Security (RLS) meant auth, data access, and user isolation were handled without writing a custom Express/Go/Python server — saving hours that were spent on UI quality instead.
+For this personal project, Supabase's auto-generated REST API and Row Level Security (RLS) handle auth, data access, and user isolation without requiring a separate Express, Go, or Python backend.
 
 ### 2. Money as `numeric`, never `float`
 A common mistake is storing money as a JavaScript `number` or a SQL `float`. Both can silently introduce rounding errors (e.g. `0.1 + 0.2 !== 0.3`). All amounts are stored as `numeric(12,2)` in Postgres and parsed to string/Decimal on the frontend before display.

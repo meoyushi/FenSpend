@@ -1,6 +1,6 @@
 # FenSpend AI Financial Health Platform
 
-This document is the complete product and engineering master plan for FenSpend. It preserves the original project brief and explains how the current implementation grows toward the final platform.
+This document is the complete product and engineering master plan for your FenSpend personal project. It explains how the current implementation grows toward the final platform.
 
 ## Product Definition
 
@@ -444,7 +444,7 @@ The mock provider enables deterministic tests, offline development, predictable 
 
 ### What happens if the LLM returns bad data?
 
-The Groq adapter requests JSON and validates the exact response shape. Empty, invalid, or malformed output causes an error, and the API returns a controlled `503` response instead of displaying untrusted content.
+The Groq adapter requests JSON and validates the exact response shape. Empty, invalid, or malformed output causes an error. Requests have a bounded timeout and one retry; if Groq is temporarily unavailable, the API falls back to a deterministic mock insight built from the same verified snapshot instead of displaying untrusted content.
 
 ### What is the current limitation?
 

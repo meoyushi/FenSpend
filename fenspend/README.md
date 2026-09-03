@@ -4,7 +4,7 @@
 
 # FenSpend 💸
 
-A personal finance app that started as an expense tracker and is now growing into an explainable financial health platform. You can record spending, explore portfolio performance, and get an AI-generated summary based on the financial data the app actually has.
+A personal AI-supported finance app that started as an expense tracker and is now growing into an explainable financial health platform. You can record spending, explore portfolio performance, and get AI-generated summaries based on the financial data the app actually has.
 
 The expense tracker remains the original working feature. The portfolio currently uses synthetic data, and the financial-health screen can use either a deterministic mock provider or Groq. See the [FenSpend master plan](docs/FENSPEND_MASTER_PLAN.md) for the full product direction, architecture, phases, and interview preparation. The [build and interview guide](docs/FENSPEND_GUIDE.md) tracks implementation details and current status.
 
@@ -121,7 +121,7 @@ Fetch expenses for the authenticated user.
 ## Key Design Decisions
 
 ### 1. Supabase instead of a custom backend
-The assignment allowed any persistence mechanism. Using Supabase's auto-generated REST API and Row Level Security (RLS) meant auth, data access, and user isolation were handled without writing a custom Express/Go/Python server — saving hours that were spent on UI quality instead.
+For this personal project, Supabase's auto-generated REST API and Row Level Security (RLS) handle auth, data access, and user isolation without requiring a separate Express, Go, or Python backend.
 
 ### 2. Money as `numeric`, never `float`
 A common mistake is storing money as a JavaScript `number` or a SQL `float`. Both can silently introduce rounding errors (e.g. `0.1 + 0.2 !== 0.3`). All amounts are stored as `numeric(12,2)` in Postgres and parsed to string/Decimal on the frontend before display.

@@ -1,6 +1,6 @@
 # FenSpend: Build and Interview Guide
 
-This is the living engineering guide for the FenSpend AI Financial Health Platform. Update it whenever a module, data source, or design decision changes.
+This is the living engineering guide for your FenSpend personal project and its AI Financial Health Platform direction. Update it whenever a module, data source, or design decision changes.
 
 ## Product direction
 
@@ -158,7 +158,7 @@ GROQ_API_KEY=your-groq-api-key
 GROQ_MODEL=openai/gpt-oss-20b
 ```
 
-The provider sends only the structured `FinancialSnapshot`, requests JSON, and validates the returned shape before the API returns it. If the key is missing or Grok fails, `/api/financial-health` returns `503`; the UI shows an unavailable state rather than presenting made-up insight.
+The provider sends only the structured `FinancialSnapshot`, requests JSON, and validates the returned shape before the API returns it. Groq requests have a 30-second timeout and one retry. If Groq is temporarily unavailable, the API returns a deterministic mock insight from the same snapshot instead of failing the whole portfolio page.
 
 ### What is the main current limitation?
 
