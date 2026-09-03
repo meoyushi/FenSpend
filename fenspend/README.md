@@ -4,12 +4,22 @@
 
 # FenSpend 💸
 
-A minimal, production-quality personal expense tracker built as a full-stack assignment. Track your spending by category, filter and sort your expenses, and always know your running total — even across page refreshes and unreliable networks.
+A personal finance app that started as an expense tracker and is now growing into an explainable financial health platform. You can record spending, explore portfolio performance, and get an AI-generated summary based on the financial data the app actually has.
 
-The project is now being extended toward an AI financial health platform. See the [FenSpend master plan](docs/FENSPEND_MASTER_PLAN.md) for the complete product brief, architecture, phases, LLD rules, and interview preparation. The [build and interview guide](docs/FENSPEND_GUIDE.md) tracks the implementation details and current status.
+The expense tracker remains the original working feature. The portfolio currently uses synthetic data, and the financial-health screen can use either a deterministic mock provider or Groq. See the [FenSpend master plan](docs/FENSPEND_MASTER_PLAN.md) for the full product direction, architecture, phases, and interview preparation. The [build and interview guide](docs/FENSPEND_GUIDE.md) tracks implementation details and current status.
 
 **Live App:** [fen-spend.vercel.app](https://fen-spend.vercel.app)  
 **Repo:** [github.com/meoyushi/FenSpend](https://github.com/meoyushi/FenSpend)
+
+## What works today
+
+- Add, filter, sort, and delete expenses backed by Supabase
+- Open a portfolio dashboard with holdings, returns, P&L, and allocation
+- Add or drop demo portfolio holdings while the server is running
+- Generate a financial-health explanation from verified portfolio metrics
+- Switch between the local mock AI provider and Groq through environment variables
+
+Portfolio holdings are currently synthetic and stored in memory. The next step is durable investment storage and deterministic portfolio-risk strategies.
 
 ---
 
@@ -36,10 +46,10 @@ The project is now being extended toward an AI financial health platform. See th
 |---|---|---|
 | Framework | Next.js (App Router) + TypeScript | Full-stack in one repo; API Routes for backend logic; strong typing throughout |
 | Styling | Tailwind CSS | Utility-first; fast to iterate without leaving JSX |
-| Animations | Framer Motion | Smooth micro-interactions that feel polished without heavy effort |
-| Auth + DB | Supabase | Instant Postgres + auth + realtime; replaces a custom backend entirely |
-| Deployment | Vercel | Zero-config for Next.js; free tier sufficient for this scope |
-| Charts | Recharts | Composable, lightweight; integrates well with React state |
+| Data and expense API | Supabase | Existing expense persistence and database access |
+| Portfolio data | Mock provider | Deterministic data for development and demos |
+| AI | Groq through OpenAI-compatible SDK | Generates explainable summaries on the server |
+| Deployment | Vercel | Natural deployment target for Next.js |
 
 ---
 
@@ -63,7 +73,7 @@ Floating-point types (`float`, `double`) cannot represent many decimal values ex
 
 ## API
 
-All routes are Next.js API Routes (`/app/api/...`) backed by Supabase.
+The API uses Next.js Route Handlers. Expense routes talk to Supabase; portfolio and financial-health routes delegate to application services.
 
 ### `POST /api/expenses`
 
@@ -145,6 +155,7 @@ Rather than calling an ML API, a lightweight keyword map (Zomato → Food, Uber 
 - **Bank integrations or real finance APIs** — adds no value for this scope and would slow down development significantly
 - **ML-based categorization** — rule-based achieves the same UX result at zero cost
 - **Custom backend (Node/Go/Python)** — Supabase RLS + API routes cover all backend needs without a separate service
+- **Real-time market data** — the market-data interface is ready, but the current provider is intentionally synthetic
 
 ---
 
@@ -160,7 +171,7 @@ npm install
 
 # 3. Set up environment variables
 cp .env.example .env
-# Fill in your Supabase URL and anon key
+# Fill in your Supabase URL and anon key. For Groq, use AI_PROVIDER=groq and add GROQ_API_KEY.
 
 # 4. Run the dev server
 npm run dev
@@ -173,6 +184,9 @@ Open [http://localhost:3000](http://localhost:3000).
 ```env
 SUPABASE_URL=your_supabase_project_url
 SUPABASE_ANON_KEY=your_supabase_anon_key
+AI_PROVIDER=mock
+GROQ_API_KEY=your-groq-api-key
+GROQ_MODEL=openai/gpt-oss-20b
 ```
 
 ---
@@ -183,13 +197,17 @@ SUPABASE_ANON_KEY=your_supabase_anon_key
 fenspend/
 ├── app/
 │   ├── api/
-│   │   └── expenses/
-│   │       └── route.ts          # GET / POST / DELETE (Supabase)
-│   ├── FenSpend.png              # Original logo
+│   │   ├── expenses/             # Expense API backed by Supabase
+│   │   ├── portfolio/             # Portfolio API
+│   │   └── financial-health/      # AI insight API
+│   ├── portfolio/                 # Portfolio dashboard
 │   ├── favicon.ico
 │   ├── globals.css               # Theme, animations, dark mode base styles
 │   ├── layout.tsx                # Root layout, fonts, metadata
 │   └── page.tsx                  # Login + Dashboard UI
+├── application/                  # Use cases and orchestration
+├── domain/                       # Framework-independent financial rules
+├── infrastructure/               # Market-data and AI provider adapters
 │
 ├── lib/
 │   └── prisma.ts                 # Legacy — replaced by Supabase (can be removed)
@@ -223,4 +241,4 @@ This project was built with correctness and clarity as the primary goals, not fe
 
 ---
 
-*Built with Next.js, Supabase, Tailwind CSS, and Framer Motion. Deployed on Vercel.*
+*Built with Next.js, TypeScript, Supabase, Tailwind CSS, and Groq. Deployed on Vercel.*
