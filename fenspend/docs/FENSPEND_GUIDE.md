@@ -80,7 +80,7 @@ The domain calculator only receives typed investments. It knows nothing about Ne
 - [x] Add typed investment and portfolio summary domain models.
 - [x] Add deterministic portfolio calculations.
 - [x] Add mock market-data adapter.
-- [x] Add read-only portfolio route and dashboard.
+- [x] Add portfolio route, dashboard, and add/drop controls.
 - [ ] Add persisted `Asset`, `Investment`, `Portfolio`, and `PortfolioSnapshot` models.
 - [ ] Extract expense business logic from the client page.
 
@@ -171,6 +171,63 @@ The portfolio form sends `POST /api/portfolio` with a validated holding. The rou
 ### What would you test first?
 
 Test zero holdings, zero invested amount, negative P&L, mixed asset types, allocation totals, and a known fixture where each holding's value and weight can be calculated by hand. Then add route tests for missing email and provider failures.
+
+## Interview Revision Plan
+
+### 60-second project explanation
+
+FenSpend is a personal AI-supported finance platform. It started as an expense tracker and now combines spending data with portfolio analytics. The application calculates portfolio metrics deterministically, detects or will detect measurable risks through independent strategies, and uses Groq only to explain verified financial snapshots. The main design goal is to keep financial truth in the application and keep the AI provider replaceable.
+
+### Architecture walkthrough
+
+1. Start at `app/portfolio/page.tsx`: the UI requests summaries and submits add/drop actions.
+2. Move to `app/api/portfolio/route.ts`: the route validates HTTP input and delegates to the application service.
+3. Explain `application/portfolio-service.ts`: it coordinates the provider and domain calculation.
+4. Explain `domain/portfolio.ts`: it calculates invested value, current value, P&L, returns, weights, and allocations using integer paise.
+5. Explain `infrastructure/market-data/`: the provider interface allows mock data to be replaced by a real market-data adapter.
+6. Explain `app/api/financial-health/route.ts`: it obtains the verified summary and delegates insight generation.
+7. Explain `infrastructure/ai/`: `AIProvider` supports both deterministic mock output and the Groq adapter.
+
+### Topics to revise before an interview
+
+- Next.js App Router, route handlers, server/client component boundaries, and environment variables.
+- React state and effects used to load user-scoped portfolio data.
+- Supabase access patterns, Row Level Security, and why the current email login is demo-level rather than production authentication.
+- Integer money arithmetic and why floating-point values are unsafe for financial totals.
+- Dependency inversion, Adapter Pattern, Repository Pattern, and Strategy Pattern.
+- JSON validation, timeout, retry, fallback, and error handling for external AI calls.
+- Multi-tenant data isolation and why identity must come from verified server authentication in production.
+- Testing pure domain calculations separately from API routes and external providers.
+
+### Questions to practice answering
+
+**Why is the AI not calculating portfolio returns?**
+
+Returns are deterministic and should be reproducible and auditable. Groq receives the calculated snapshot and explains it; it does not own financial truth.
+
+**What happens when Groq is unavailable?**
+
+The provider has a bounded timeout and retry. The API falls back to a deterministic mock insight built from the same verified snapshot, so the user does not see fabricated data or an unexplained blank state.
+
+**Is the current authentication production-ready?**
+
+No. The current demo stores an email in localStorage and sends it to the API. A production version should use Supabase Auth, derive identity from a verified session on the server, enforce RLS, and rate-limit AI requests.
+
+**How would you add a new risk detector?**
+
+Create a class implementing `RiskDetectionStrategy`, write tests for its threshold and evidence, then register it with the engine. Existing detectors and portfolio calculations do not need to change.
+
+**What would you build next?**
+
+Persist investments, add portfolio snapshots and historical prices, implement risk strategies, include expense and savings data in `FinancialSnapshot`, and add route/provider tests.
+
+### Honest limitations to mention
+
+- Portfolio data is synthetic and currently held in memory.
+- The current login is a demo identity mechanism, not verified authentication.
+- Risk detection strategies are planned but not implemented yet.
+- The AI fallback is intentionally deterministic when Groq is unavailable.
+- End-to-end and provider contract tests are still needed.
 
 ## Run and validate
 
