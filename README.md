@@ -13,6 +13,28 @@ The project is intentionally built in layers: deterministic financial calculatio
 
 For the full architecture, implementation notes, and interview revision plan, see the [FenSpend guide](fenspend/docs/FENSPEND_GUIDE.md) and [master plan](fenspend/docs/FENSPEND_MASTER_PLAN.md).
 
+## Screenshots
+
+### Login
+
+![FenSpend login screen](fenspend/public/Screenshot%202026-09-03%20at%204.47.33%E2%80%AFPM.png)
+
+### Expense dashboard
+
+![FenSpend expense dashboard](fenspend/public/Screenshot%202026-09-03%20at%204.48.20%E2%80%AFPM.png)
+
+### Expense categories and filters
+
+![FenSpend expense category filter](fenspend/public/Screenshot%202026-09-03%20at%204.48.39%E2%80%AFPM.png)
+
+### Portfolio and AI insight
+
+![FenSpend portfolio financial health insight](fenspend/public/Screenshot%202026-09-03%20at%204.48.47%E2%80%AFPM.png)
+
+### Portfolio allocation and holdings
+
+![FenSpend portfolio allocation and holdings](fenspend/public/Screenshot%202026-09-03%20at%204.48.55%E2%80%AFPM.png)
+
 ---
 
 ## What Works Today

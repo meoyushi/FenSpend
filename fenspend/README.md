@@ -21,6 +21,18 @@ The expense tracker remains the original working feature. The portfolio currentl
 
 Portfolio holdings are currently synthetic and stored in memory. The next step is durable investment storage and deterministic portfolio-risk strategies.
 
+## Screenshots
+
+![FenSpend login screen](public/Screenshot%202026-09-03%20at%204.47.33%E2%80%AFPM.png)
+
+![FenSpend expense dashboard](public/Screenshot%202026-09-03%20at%204.48.20%E2%80%AFPM.png)
+
+![FenSpend expense category filter](public/Screenshot%202026-09-03%20at%204.48.39%E2%80%AFPM.png)
+
+![FenSpend portfolio financial health insight](public/Screenshot%202026-09-03%20at%204.48.47%E2%80%AFPM.png)
+
+![FenSpend portfolio allocation and holdings](public/Screenshot%202026-09-03%20at%204.48.55%E2%80%AFPM.png)
+
 ---
 
 ## Features
