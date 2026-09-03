@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, FormEvent } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                             */
@@ -390,6 +391,12 @@ function Dashboard({
 
           <div className="flex items-center gap-3">
             <span className="hidden text-xs text-muted sm:inline">{email}</span>
+            <Link
+              href="/portfolio"
+              className="rounded-lg border border-accent/30 bg-accent-bg px-3 py-1.5 text-xs font-medium text-accent transition-all hover:border-accent/60 hover:text-accent-hover"
+            >
+              Portfolio
+            </Link>
             <button
               id="logout-btn"
               onClick={onLogout}
