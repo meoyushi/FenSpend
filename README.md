@@ -4,12 +4,26 @@
 
 # FenSpend 💸
 
-A personal AI-supported finance project that started as an expense tracker. Track your spending by category, filter and sort your expenses, and get explainable financial insights alongside your portfolio data.
+A personal AI-supported finance project that started as an expense tracker and is growing into an explainable financial health platform. It combines spending records, portfolio analytics, and AI-generated explanations based on the financial data available to the application.
+
+The project is intentionally built in layers: deterministic financial calculations first, then risk analysis, then AI reasoning over verified results. This keeps the AI useful without making it the source of financial truth.
 
 **Live App:** [fen-spend.vercel.app](https://fen-spend.vercel.app)  
 **Repo:** [github.com/meoyushi/FenSpend](https://github.com/meoyushi/FenSpend)
 
+For the full architecture, implementation notes, and interview revision plan, see the [FenSpend guide](fenspend/docs/FENSPEND_GUIDE.md) and [master plan](fenspend/docs/FENSPEND_MASTER_PLAN.md).
+
 ---
+
+## What Works Today
+
+- Add, filter, sort, and delete expenses through Supabase
+- View portfolio value, invested amount, P&L, return, holdings, and allocation
+- Add and drop synthetic portfolio holdings while the server is running
+- Generate financial-health explanations with Groq or the deterministic mock provider
+- Keep custom portfolio holdings scoped by the logged-in email in the current demo flow
+
+Portfolio holdings are currently synthetic and stored in memory. The next major step is durable investment storage and deterministic portfolio-risk strategies.
 
 ## Features
 
@@ -25,6 +39,9 @@ A personal AI-supported finance project that started as an expense tracker. Trac
 - **Category summary** — see total spending broken down per category
 - Dark UI by default; Tailwind's class-based theming makes a light/dark toggle straightforward to add
 - Mobile-friendly, responsive layout
+- **Portfolio intelligence** — track holdings, returns, P&L, asset allocation, and sector allocation
+- **AI-supported financial health** — explain verified portfolio metrics through Groq or a local mock provider
+- **Provider boundaries** — market-data and AI integrations can be replaced without changing portfolio business logic
 
 ---
 
@@ -34,10 +51,10 @@ A personal AI-supported finance project that started as an expense tracker. Trac
 |---|---|---|
 | Framework | Next.js (App Router) + TypeScript | Full-stack in one repo; API Routes for backend logic; strong typing throughout |
 | Styling | Tailwind CSS | Utility-first; fast to iterate without leaving JSX |
-| Animations | Framer Motion | Smooth micro-interactions that feel polished without heavy effort |
-| Auth + DB | Supabase | Instant Postgres + auth + realtime; replaces a custom backend entirely |
-| Deployment | Vercel | Zero-config for Next.js; free tier sufficient for this scope |
-| Charts | Recharts | Composable, lightweight; integrates well with React state |
+| Data and expense API | Supabase | Existing expense persistence and database access |
+| Portfolio data | Mock provider | Deterministic data for development and demos |
+| AI | Groq through OpenAI-compatible SDK | Generates explainable summaries on the server |
+| Deployment | Vercel | Natural deployment target for Next.js |
 
 ---
 
@@ -61,7 +78,7 @@ Floating-point types (`float`, `double`) cannot represent many decimal values ex
 
 ## API
 
-All routes are Next.js API Routes (`/app/api/...`) backed by Supabase.
+The API uses Next.js Route Handlers. Expense routes talk to Supabase; portfolio and financial-health routes delegate to application services.
 
 ### `POST /api/expenses`
 
@@ -104,6 +121,22 @@ Fetch expenses for the authenticated user.
 
 **Response:** `200 OK` with array of expense objects and a `total` field summing the visible amounts.
 
+### `GET /api/portfolio?email={email}`
+
+Returns the calculated portfolio summary for the requested demo user, including holdings, P&L, returns, and allocations.
+
+### `POST /api/portfolio`
+
+Adds a validated holding for a user and returns the recalculated portfolio summary.
+
+### `DELETE /api/portfolio?email={email}&id={id}`
+
+Drops a holding for the requested user and returns the recalculated summary.
+
+### `GET /api/financial-health?email={email}`
+
+Builds a verified `FinancialSnapshot` and sends it through the configured `AIProvider`. With `AI_PROVIDER=groq`, Groq generates the explanation. If Groq is temporarily unavailable, the API returns a deterministic mock insight from the same snapshot.
+
 ---
 
 ## Key Design Decisions
@@ -122,6 +155,10 @@ Totals always reflect the *filtered* set, not all expenses. This is computed in 
 
 ### 5. Auto-category suggestion (rule-based)
 Rather than calling an ML API, a lightweight keyword map (Zomato → Food, Uber → Transport, etc.) runs client-side as the user types the description. It feels like AI, costs nothing, and adds zero latency.
+
+### 6. AI explains data; it does not invent data
+
+Portfolio values, returns, and allocations are calculated in TypeScript before the AI provider is called. The AI receives a structured snapshot, returns a validated JSON insight, and is instructed not to create metrics or give buy/sell predictions.
 
 ---
 
@@ -143,6 +180,7 @@ Rather than calling an ML API, a lightweight keyword map (Zomato → Food, Uber 
 - **Bank integrations or real finance APIs** — adds no value for this scope and would slow down development significantly
 - **ML-based categorization** — rule-based achieves the same UX result at zero cost
 - **Custom backend (Node/Go/Python)** — Supabase RLS + API routes cover all backend needs without a separate service
+- **Real-time market data** — the provider interface is ready, but the current portfolio data is synthetic
 
 ---
 
@@ -158,7 +196,7 @@ npm install
 
 # 3. Set up environment variables
 cp .env.example .env
-# Fill in your Supabase URL and anon key
+# Fill in your Supabase URL and anon key. For real AI, set AI_PROVIDER=groq and add GROQ_API_KEY.
 
 # 4. Run the dev server
 npm run dev
@@ -171,6 +209,9 @@ Open [http://localhost:3000](http://localhost:3000).
 ```env
 SUPABASE_URL=your_supabase_project_url
 SUPABASE_ANON_KEY=your_supabase_anon_key
+AI_PROVIDER=mock
+GROQ_API_KEY=your-groq-api-key
+GROQ_MODEL=openai/gpt-oss-20b
 ```
 
 ---
@@ -181,13 +222,17 @@ SUPABASE_ANON_KEY=your_supabase_anon_key
 fenspend/
 ├── app/
 │   ├── api/
-│   │   └── expenses/
-│   │       └── route.ts          # GET / POST / DELETE (Supabase)
-│   ├── FenSpend.png              # Original logo
+│   │   ├── expenses/             # Expense API backed by Supabase
+│   │   ├── portfolio/             # Portfolio API
+│   │   └── financial-health/      # AI insight API
+│   ├── portfolio/                 # Portfolio dashboard
 │   ├── favicon.ico
 │   ├── globals.css               # Theme, animations, dark mode base styles
 │   ├── layout.tsx                # Root layout, fonts, metadata
 │   └── page.tsx                  # Login + Dashboard UI
+├── application/                  # Use cases and orchestration
+├── domain/                       # Framework-independent financial rules
+├── infrastructure/               # Market-data and AI adapters
 │
 ├── lib/
 │   └── prisma.ts                 # Legacy — replaced by Supabase (can be removed)
@@ -200,7 +245,7 @@ fenspend/
 ├── public/
 │   └── logo.png                  # Logo served at /logo.png
 │
-├── .env                          # SUPABASE_URL, SUPABASE_ANON_KEY
+├── .env                          # Local-only environment variables
 ├── package.json
 ├── postcss.config.mjs
 ├── next.config.ts
@@ -217,10 +262,11 @@ This project was built with correctness and clarity as the primary goals, not fe
 - **Data correctness:** Money is never stored or computed as a float
 - **Realistic conditions:** Retries, double submits, and page reloads are all handled without creating duplicate data
 - **Edge cases:** Empty states, failed fetches, and validation errors all have explicit UI treatment
-- **Code structure:** Each concern (auth, data fetching, display, business logic) lives in its own module
+- **Code structure:** Presentation, application, domain, and infrastructure responsibilities are separated
+- **AI safety:** Provider output is validated, server-side keys stay private, and Groq has a deterministic fallback
 
 ---
 
-*Built with Next.js, Supabase, Tailwind CSS, and Framer Motion. Deployed on Vercel.*
+*Built with Next.js, TypeScript, Supabase, Tailwind CSS, and Groq. Deployed on Vercel.*
 
 *Aayushi🌸*
