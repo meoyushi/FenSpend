@@ -6,6 +6,8 @@
 
 A minimal, production-quality personal expense tracker built as a full-stack assignment. Track your spending by category, filter and sort your expenses, and always know your running total — even across page refreshes and unreliable networks.
 
+The project is now being extended toward an AI financial health platform. See the [FenSpend master plan](docs/FENSPEND_MASTER_PLAN.md) for the complete product brief, architecture, phases, LLD rules, and interview preparation. The [build and interview guide](docs/FENSPEND_GUIDE.md) tracks the implementation details and current status.
+
 **Live App:** [fen-spend.vercel.app](https://fen-spend.vercel.app)  
 **Repo:** [github.com/meoyushi/FenSpend](https://github.com/meoyushi/FenSpend)
 
