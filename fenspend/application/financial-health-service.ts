@@ -22,6 +22,10 @@ export class FinancialHealthService {
   }
 }
 
+export function createFallbackFinancialHealthService(): FinancialHealthService {
+  return new FinancialHealthService(new MockAIProvider());
+}
+
 function createAIProvider(): AIProvider {
   if (process.env.AI_PROVIDER === "groq") {
     return new GroqAIProvider();

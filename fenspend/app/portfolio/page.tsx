@@ -21,16 +21,26 @@ function labelForAssetType(value: string): string {
   return value.replace("MUTUAL_FUND", "MUTUAL FUND");
 }
 
-const USER_EMAIL = "demo@example.com";
+const LS_KEY = "fenspend_email";
 
 export default function PortfolioPage() {
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [summary, setSummary] = useState<PortfolioSummary | null>(null);
   const [insight, setInsight] = useState<FinancialHealthInsight | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    const storedEmail = localStorage.getItem(LS_KEY);
+    if (storedEmail) {
+      Promise.resolve().then(() => setUserEmail(storedEmail));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!userEmail) return;
+
     let active = true;
-    fetch(`/api/portfolio?email=${USER_EMAIL}`)
+    fetch(`/api/portfolio?email=${encodeURIComponent(userEmail)}`)
       .then((response) => {
         if (!response.ok) throw new Error("Could not load portfolio");
         return response.json();
@@ -45,30 +55,34 @@ export default function PortfolioPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [userEmail]);
 
   const fetchInsight = async () => {
-    const response = await fetch(`/api/financial-health?email=${USER_EMAIL}`);
+    if (!userEmail) return;
+    const response = await fetch(`/api/financial-health?email=${encodeURIComponent(userEmail)}`);
     if (!response.ok) throw new Error("Could not load insight");
     setInsight(await response.json());
   };
 
   useEffect(() => {
-    fetch(`/api/financial-health?email=${USER_EMAIL}`)
+    if (!userEmail) return;
+
+    fetch(`/api/financial-health?email=${encodeURIComponent(userEmail)}`)
       .then((response) => {
         if (!response.ok) throw new Error("Could not load insight");
         return response.json();
       })
       .then((data: FinancialHealthInsight) => setInsight(data))
       .catch(() => setError("Could not load the financial health insight."));
-  }, []);
+  }, [userEmail]);
 
   const addHolding = async (investment: Omit<Investment, "id">) => {
+    if (!userEmail) return;
     setError("");
     const response = await fetch("/api/portfolio", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: USER_EMAIL, investment }),
+      body: JSON.stringify({ email: userEmail, investment }),
     });
     if (!response.ok) {
       setError("Could not add holding. Check the values and try again.");
@@ -79,8 +93,9 @@ export default function PortfolioPage() {
   };
 
   const dropHolding = async (id: string) => {
+    if (!userEmail) return;
     setError("");
-    const response = await fetch(`/api/portfolio?email=${USER_EMAIL}&id=${id}`, {
+    const response = await fetch(`/api/portfolio?email=${encodeURIComponent(userEmail)}&id=${encodeURIComponent(id)}`, {
       method: "DELETE",
     });
     if (!response.ok) {
@@ -90,6 +105,15 @@ export default function PortfolioPage() {
     setSummary(await response.json());
     await fetchInsight();
   };
+
+  if (!userEmail) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center gap-3 text-sm text-muted">
+        <p>Please log in before opening your portfolio.</p>
+        <Link href="/" className="text-accent hover:text-accent-hover">Back to login</Link>
+      </main>
+    );
+  }
 
   if (!summary) {
     return <main className="flex min-h-screen items-center justify-center text-sm text-muted">Loading portfolio...</main>;

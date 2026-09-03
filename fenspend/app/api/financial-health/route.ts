@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { financialHealthService } from "@/application/financial-health-service";
+import {
+  createFallbackFinancialHealthService,
+  financialHealthService,
+} from "@/application/financial-health-service";
 import { portfolioService } from "@/application/portfolio-service";
 
 export async function GET(request: NextRequest) {
@@ -15,9 +18,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(insight);
   } catch (error) {
     console.error("Financial health provider failed", error);
-    return NextResponse.json(
-      { error: "Financial health insight is temporarily unavailable" },
-      { status: 503 },
+    const fallbackInsight = await createFallbackFinancialHealthService().generateInsight(
+      await portfolioService.getSummary(email),
     );
+    return NextResponse.json(fallbackInsight, {
+      headers: { "x-fenspend-ai-provider": "mock-fallback" },
+    });
   }
 }

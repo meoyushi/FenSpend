@@ -34,6 +34,8 @@ export class GroqAIProvider implements AIProvider {
     this.client = new OpenAI({
       apiKey,
       baseURL: "https://api.groq.com/openai/v1",
+      maxRetries: 1,
+      timeout: 30_000,
     });
     this.model = model;
   }
